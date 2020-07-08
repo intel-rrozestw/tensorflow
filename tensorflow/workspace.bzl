@@ -472,18 +472,17 @@ def tf_repositories(path_prefix = "", tf_repo_name = ""):
         },
     )
 
-    # 310ba5ee72661c081129eb878c1bbcec936b20f0 is based on 3.8.0 with a fix for protobuf.bzl.
-    PROTOBUF_URLS = [
-        "https://github.com/protocolbuffers/protobuf/archive/v3.6.1.tar.gz",
-    ]
-    PROTOBUF_SHA256 = "3d4e589d81b2006ca603c1ab712c9715a76227293032d05b26fca603f90b3f5b"
-    PROTOBUF_STRIP_PREFIX = "protobuf-310ba5ee72661c081129eb878c1bbcec936b20f0"
 
-    PROTOBUF_PATCH = "//third_party/protobuf:protobuf.patch"
+##########################
+    PROTOBUF_URLS = [
+        "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v3.6.1.2.tar.gz",
+        "https://github.com/protocolbuffers/protobuf/archive/v3.6.1.2.tar.gz",
+    ]
+    PROTOBUF_SHA256 = "2244b0308846bb22b4ff0bcc675e99290ff9f1115553ae9671eba1030af31bc0"
+    PROTOBUF_STRIP_PREFIX = "protobuf-3.6.1.2"
 
     tf_http_archive(
-        name = "com_google_protobuf",
-        #patch_file = clean_dep(PROTOBUF_PATCH),
+        name = "protobuf_archive",
         sha256 = PROTOBUF_SHA256,
         strip_prefix = PROTOBUF_STRIP_PREFIX,
         system_build_file = clean_dep("//third_party/systemlibs:protobuf.BUILD"),
@@ -492,6 +491,32 @@ def tf_repositories(path_prefix = "", tf_repo_name = ""):
         },
         urls = PROTOBUF_URLS,
     )
+
+    # We need to import the protobuf library under the names com_google_protobuf
+    # and com_google_protobuf_cc to enable proto_library support in bazel.
+    # Unfortunately there is no way to alias http_archives at the moment.
+    tf_http_archive(
+        name = "com_google_protobuf",
+        sha256 = PROTOBUF_SHA256,
+        strip_prefix = PROTOBUF_STRIP_PREFIX,
+        system_build_file = clean_dep("//third_party/systemlibs:protobuf.BUILD"),
+        system_link_files = {
+            "//third_party/systemlibs:protobuf.bzl": "protobuf.bzl",
+        },
+        urls = PROTOBUF_URLS,
+    )
+
+    tf_http_archive(
+        name = "com_google_protobuf_cc",
+        sha256 = PROTOBUF_SHA256,
+        strip_prefix = PROTOBUF_STRIP_PREFIX,
+        system_build_file = clean_dep("//third_party/systemlibs:protobuf.BUILD"),
+        system_link_files = {
+            "//third_party/systemlibs:protobuf.bzl": "protobuf.bzl",
+        },
+        urls = PROTOBUF_URLS,
+    )
+##########################
 
     tf_http_archive(
         name = "nsync",
